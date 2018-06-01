@@ -1,14 +1,17 @@
 package app.ultimatex.wifiroutersignal;
 
-import java.io.BufferedReader;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.CookieHandler;
 import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 public class Connection {
 
@@ -17,7 +20,7 @@ public class Connection {
 
     private String baseUrl ="http://192.168.1.1/";
     private String api ="api/monitoring/status/";
-    private String home="home/index.html";
+    private String home="html/home.html";
 
     private HttpURLConnection urlConnection;
 
@@ -57,28 +60,27 @@ public class Connection {
 
             urlConnection =(HttpURLConnection) url.openConnection();
 
-            BufferedReader bufferedReader =new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-
-            String inputLine;
-            while ((inputLine = bufferedReader.readLine()) != null) {
-                response.append(inputLine);
-            }
-            bufferedReader.close();
-
 
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        finally {
-            urlConnection.disconnect();
+
+        //String xml=response.toString();
+        Document document =null;
+
+        DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
+
+        try {
+            DocumentBuilder builder =factory.newDocumentBuilder();
+            document =builder.parse(urlConnection.getInputStream());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        String xml=response.toString();
+        NodeList list=document.getElementsByTagName("SignalIcon");
+        return list.item(0).getTextContent();
 
-
-
-        return xml;
     }
 
 }
