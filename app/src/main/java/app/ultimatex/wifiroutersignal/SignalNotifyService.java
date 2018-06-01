@@ -99,6 +99,12 @@ public class SignalNotifyService extends Service {
 
         @Override
         protected void onPostExecute(Void aVoid) {
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if(isMyServiceRunning(SignalNotifyService.class))
                 runTask();
         }
