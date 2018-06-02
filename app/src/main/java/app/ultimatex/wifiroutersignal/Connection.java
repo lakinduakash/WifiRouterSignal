@@ -2,30 +2,52 @@ package app.ultimatex.wifiroutersignal;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 public class Connection {
 
-    private static boolean cookieInitialized=false;
-    private static CookieManager cookieManager=new CookieManager();
+    public static final String NOT_SUPPORTED="not_supported";
+    public static final String NOT_CONNECTED="not_connected";
 
-    private String baseUrl ="http://192.168.1.1/";
-    private String api ="api/monitoring/status/";
+    private static boolean cookieInitialized=false;
+    private  static CookieHandler cookieHandler;
+    private static CookieManager cookieManager=new CookieManager();
+    private static Connection instance;
+
+    private static String baseUrl ="http://192.168.1.1/";
+    private String statusApi ="api/monitoring/status/";
+    private String trafficApi="api/monitoring/traffic-statistics/";
     private String home="html/home.html";
+
 
     private HttpURLConnection urlConnection;
 
+    private InputStream statusStream;
+    private InputStream trafficStream;
 
-    public Connection()
+    public static Connection getInstance()
+    {
+        if(instance ==null)
+            return instance =new Connection();
+        else
+            return instance;
+    }
+
+
+    private Connection()
     {
         URL url =null;
         CookieHandler.setDefault(cookieManager);
@@ -49,38 +71,144 @@ public class Connection {
             }
 
         }
+
+
+
     }
+
 
     public String getSignalLevel()
     {
-        int level=0;
-        StringBuffer response= new StringBuffer();
-        try {
-            URL url= new URL(baseUrl+api);
-
-            urlConnection =(HttpURLConnection) url.openConnection();
-
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //String xml=response.toString();
-        Document document =null;
-
-        DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
+        URL apiStatusUrl=null;
 
         try {
-            DocumentBuilder builder =factory.newDocumentBuilder();
-            document =builder.parse(urlConnection.getInputStream());
+            apiStatusUrl =new URL(baseUrl+ statusApi);
+            urlConnection =(HttpURLConnection) apiStatusUrl.openConnection();
+            statusStream =urlConnection.getInputStream();
         } catch (Exception e) {
             e.printStackTrace();
+            return NOT_CONNECTED;
         }
 
-        NodeList list=document.getElementsByTagName("SignalIcon");
-        return list.item(0).getTextContent();
+        if(statusStream!=null)
+        {
+            try {
+                Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(statusStream);
+
+                if(!isCookieValid(document))
+                    reInitializeCookie();
+                return getElementValue(document,"SignalIcon",NOT_SUPPORTED);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return NOT_SUPPORTED;
+            }
+        }
+
+        return NOT_CONNECTED;
+
 
     }
+
+
+    public String getSessionData()
+    {
+        URL apiStatusUrl=null;
+
+        try {
+            apiStatusUrl =new URL(baseUrl+ trafficApi);
+            urlConnection =(HttpURLConnection) apiStatusUrl.openConnection();
+            trafficStream =urlConnection.getInputStream();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return NOT_CONNECTED;
+        }
+
+        if(trafficStream!=null)
+        {
+            try {
+                Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(trafficStream);
+
+                if(!isCookieValid(document))
+                    reInitializeCookie();
+                String down =getElementValue(document,"CurrentDownload",NOT_SUPPORTED);
+                String up =getElementValue(document,"CurrentUpload",NOT_SUPPORTED);
+
+                int total=Integer.parseInt(down)+Integer.parseInt(up);
+
+
+                if(total>1024*1024)
+                {
+                   double mb=total/ (1024.0*1024.0);
+                    String s=String.format(Locale.getDefault(),"%.2f", mb);
+                   return s +" Mb";
+                }
+                else if(total>1024)
+                {
+                    double kb= total/1024.0;
+                    String s=String.format(Locale.getDefault(),"%.2f", kb);
+                    return s +" Kb";
+                }
+                else
+                {
+                    return Integer.toString(total) +" Bytes";
+                }
+
+
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return NOT_SUPPORTED;
+            }
+        }
+
+        return NOT_CONNECTED;
+    }
+
+    private String getElementValue(Document document,String element,String def)
+    {
+       NodeList list =document.getElementsByTagName(element);
+
+       if(list.getLength()!=0)
+           return list.item(0).getTextContent();
+       else
+           return def;
+    }
+
+    private String getRoot(Document document)
+    {
+        return document.getDocumentElement().getNodeName();
+    }
+
+    private boolean isCookieValid(Document document)
+    {
+        if ("error".equals(getRoot(document)))
+            return false;
+        else
+            return true;
+    }
+
+    private void reInitializeCookie()
+    {
+        URL url=null;
+        try {
+            url= new URL(baseUrl+home);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.connect();
+            urlConnection.getInputStream();
+            cookieInitialized =true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
 }
