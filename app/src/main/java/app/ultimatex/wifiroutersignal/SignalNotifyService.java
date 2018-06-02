@@ -20,6 +20,8 @@ public class SignalNotifyService extends Service {
     private NotificationCompat.Builder builder;
     private NotificationUpdater u;
 
+    private boolean stopTask = false;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -48,15 +50,12 @@ public class SignalNotifyService extends Service {
     }
 
 
+
     @Override
-    public boolean stopService(Intent name) {
-        if (u != null)
-            u.cancel(true);
-
-
-        return super.stopService(name);
+    public void onDestroy() {
+        stopTask = true;
+        super.onDestroy();
     }
-
 
     private void runTask() {
         u = new NotificationUpdater();
@@ -93,13 +92,19 @@ public class SignalNotifyService extends Service {
 
                 builder.setContentText("No Signal");
                 startForeground(NOTIFICATION_ID, builder.build());
-            } else if (signalLevel.equals(Connection.NOT_SUPPORTED)) {
+            } else if (signalLevel.equals(Connection.NOT_SUPPORTED) || signalLevel.equals(Connection.NOT_CONNECTED)) {
 
                 canStart = false;
                 stopSelf();
             } else {
                 builder.setContentText("Signal level:" + " " + signalLevel + " Total Data: " + totalData);
                 startForeground(NOTIFICATION_ID, builder.build());
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
             return null;
@@ -109,12 +114,8 @@ public class SignalNotifyService extends Service {
         protected void onPostExecute(Void aVoid) {
 
             if (canStart) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (isMyServiceRunning(SignalNotifyService.class))
+
+                if (!stopTask)
                     runTask();
             } else {
                 Toast.makeText(getApplicationContext(), "Your router is not supported or you are not connected", Toast.LENGTH_SHORT).show();
