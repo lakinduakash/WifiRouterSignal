@@ -130,11 +130,11 @@ public class Connection {
                 if (total > 1024 * 1024) {
                     double mb = total / (1024.0 * 1024.0);
                     String s = String.format(Locale.getDefault(), "%.2f", mb);
-                    return s + " Mb";
+                    return s + " MB";
                 } else if (total > 1024) {
                     double kb = total / 1024.0;
                     String s = String.format(Locale.getDefault(), "%.2f", kb);
-                    return s + " Kb";
+                    return s + " KB";
                 } else {
                     return Integer.toString(total) + " Bytes";
                 }
