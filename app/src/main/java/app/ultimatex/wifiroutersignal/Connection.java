@@ -24,7 +24,7 @@ public class Connection {
     private static CookieManager cookieManager = new CookieManager();
     private static Connection instance;
 
-    private static String baseUrl = "http://192.168.1.1/";
+    private static String baseUrl = "http://homerouter.cpe/";
     private String statusApi = "api/monitoring/status/";
     private String trafficApi = "api/monitoring/traffic-statistics/";
     private String home = "html/home.html";
