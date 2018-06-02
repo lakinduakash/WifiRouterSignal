@@ -10,7 +10,6 @@ public class MainActivity extends AppCompatActivity {
 
     Button startServiceButton;
     Button stopServiceButton;
-    Button changeNotificationButton;
     Intent serviceIntent;
 
     @Override
@@ -20,7 +19,6 @@ public class MainActivity extends AppCompatActivity {
 
         startServiceButton =findViewById(R.id.start_service);
         stopServiceButton =findViewById(R.id.stop_service);
-        changeNotificationButton=findViewById(R.id.change_notification);
 
         serviceIntent=new Intent(this,SignalNotifyService.class);
 
@@ -38,18 +36,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        changeNotificationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                serviceIntent.putExtra("CHANGE",1);
-                startService(serviceIntent);
-            }
-        });
     }
 
     private void startMyService()
     {
-        serviceIntent.putExtra("CHANGE",0);
+        serviceIntent.putExtra("START",0);
         startService(serviceIntent);
     }
 
