@@ -98,7 +98,7 @@ public class SignalNotifyService extends Service {
                 canStart = false;
                 stopSelf();
             } else {
-                builder.setContentText("signal level:" + " " + signalLevel + " Total: " + totalData);
+                builder.setContentText("Signal level:" + " " + signalLevel + " Total Data: " + totalData);
                 startForeground(NOTIFICATION_ID, builder.build());
             }
 
