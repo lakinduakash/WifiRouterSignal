@@ -1,8 +1,8 @@
 package app.ultimatex.wifiroutersignal;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
@@ -17,10 +17,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startServiceButton =findViewById(R.id.start_service);
-        stopServiceButton =findViewById(R.id.stop_service);
+        startServiceButton = findViewById(R.id.start_service);
+        stopServiceButton = findViewById(R.id.stop_service);
 
-        serviceIntent=new Intent(this,SignalNotifyService.class);
+        serviceIntent = new Intent(this, SignalNotifyService.class);
 
         startServiceButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -38,14 +38,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void startMyService()
-    {
-        serviceIntent.putExtra("START",0);
+    private void startMyService() {
+        serviceIntent.putExtra("START", 0);
         startService(serviceIntent);
     }
 
-    private void stopMyService()
-    {
+    private void stopMyService() {
         stopService(serviceIntent);
     }
 

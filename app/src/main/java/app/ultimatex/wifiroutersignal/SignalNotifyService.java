@@ -14,8 +14,8 @@ import android.widget.Toast;
 
 public class SignalNotifyService extends Service {
 
-    public static final int NOTIFICATION_ID=5;
-    private static int count=0;
+    public static final int NOTIFICATION_ID = 5;
+    private static int count = 0;
 
     private NotificationCompat.Builder builder;
     private NotificationUpdater u;
@@ -29,7 +29,7 @@ public class SignalNotifyService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        builder =new NotificationCompat.Builder(this,"MY_CHANNEL")
+        builder = new NotificationCompat.Builder(this, "MY_CHANNEL")
                 .setContentText("Started")
                 .setSmallIcon(R.drawable.ic_network_check_white_24dp)
                 .setContentTitle("Connected")
@@ -48,10 +48,9 @@ public class SignalNotifyService extends Service {
     }
 
 
-
     @Override
     public boolean stopService(Intent name) {
-        if (u!=null)
+        if (u != null)
             u.cancel(true);
 
 
@@ -59,9 +58,8 @@ public class SignalNotifyService extends Service {
     }
 
 
-    private void runTask()
-    {
-        u=new NotificationUpdater();
+    private void runTask() {
+        u = new NotificationUpdater();
         u.execute();
     }
 
@@ -75,10 +73,9 @@ public class SignalNotifyService extends Service {
         return false;
     }
 
-    class NotificationUpdater extends AsyncTask<Void,Void,Void>
-    {
+    class NotificationUpdater extends AsyncTask<Void, Void, Void> {
 
-        private boolean canStart= true;
+        private boolean canStart = true;
 
         @Override
         protected void onPreExecute() {
@@ -87,24 +84,21 @@ public class SignalNotifyService extends Service {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            Connection connection=Connection.getInstance();
+            Connection connection = Connection.getInstance();
 
-            String signalLevel =connection.getSignalLevel();
-            String totalData =connection.getSessionData();
+            String signalLevel = connection.getSignalLevel();
+            String totalData = connection.getSessionData();
 
-            if(signalLevel ==null || signalLevel =="") {
+            if (signalLevel == null || signalLevel == "") {
 
                 builder.setContentText("No Signal");
                 startForeground(NOTIFICATION_ID, builder.build());
-            }
-            else if(signalLevel.equals(Connection.NOT_SUPPORTED))
-            {
+            } else if (signalLevel.equals(Connection.NOT_SUPPORTED)) {
 
-                canStart=false;
+                canStart = false;
                 stopSelf();
-            }
-            else {
-                builder.setContentText("signal level:"+ " "+ signalLevel +" Total: "+totalData);
+            } else {
+                builder.setContentText("signal level:" + " " + signalLevel + " Total: " + totalData);
                 startForeground(NOTIFICATION_ID, builder.build());
             }
 
@@ -114,7 +108,7 @@ public class SignalNotifyService extends Service {
         @Override
         protected void onPostExecute(Void aVoid) {
 
-            if(canStart) {
+            if (canStart) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -122,9 +116,8 @@ public class SignalNotifyService extends Service {
                 }
                 if (isMyServiceRunning(SignalNotifyService.class))
                     runTask();
-            }
-            else {
-                Toast.makeText(getApplicationContext(),"Your router is not supported or you are not connected",Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Your router is not supported or you are not connected", Toast.LENGTH_SHORT).show();
             }
         }
     }

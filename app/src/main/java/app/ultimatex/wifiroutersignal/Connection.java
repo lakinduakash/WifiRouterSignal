@@ -2,7 +2,6 @@ package app.ultimatex.wifiroutersignal;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,24 +12,22 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 public class Connection {
 
-    public static final String NOT_SUPPORTED="not_supported";
-    public static final String NOT_CONNECTED="not_connected";
+    public static final String NOT_SUPPORTED = "not_supported";
+    public static final String NOT_CONNECTED = "not_connected";
 
-    private static boolean cookieInitialized=false;
-    private  static CookieHandler cookieHandler;
-    private static CookieManager cookieManager=new CookieManager();
+    private static boolean cookieInitialized = false;
+    private static CookieHandler cookieHandler;
+    private static CookieManager cookieManager = new CookieManager();
     private static Connection instance;
 
-    private static String baseUrl ="http://192.168.1.1/";
-    private String statusApi ="api/monitoring/status/";
-    private String trafficApi="api/monitoring/traffic-statistics/";
-    private String home="html/home.html";
+    private static String baseUrl = "http://192.168.1.1/";
+    private String statusApi = "api/monitoring/status/";
+    private String trafficApi = "api/monitoring/traffic-statistics/";
+    private String home = "html/home.html";
 
 
     private HttpURLConnection urlConnection;
@@ -38,25 +35,22 @@ public class Connection {
     private InputStream statusStream;
     private InputStream trafficStream;
 
-    public static Connection getInstance()
-    {
-        if(instance ==null)
-            return instance =new Connection();
+    public static Connection getInstance() {
+        if (instance == null)
+            return instance = new Connection();
         else
             return instance;
     }
 
 
-    private Connection()
-    {
-        URL url =null;
+    private Connection() {
+        URL url = null;
         CookieHandler.setDefault(cookieManager);
 
 
-        if(!cookieInitialized)
-        {
+        if (!cookieInitialized) {
             try {
-                url= new URL(baseUrl+home);
+                url = new URL(baseUrl + home);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -65,7 +59,7 @@ public class Connection {
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.connect();
                 urlConnection.getInputStream();
-                cookieInitialized =true;
+                cookieInitialized = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -73,31 +67,28 @@ public class Connection {
         }
 
 
-
     }
 
 
-    public String getSignalLevel()
-    {
-        URL apiStatusUrl=null;
+    public String getSignalLevel() {
+        URL apiStatusUrl = null;
 
         try {
-            apiStatusUrl =new URL(baseUrl+ statusApi);
-            urlConnection =(HttpURLConnection) apiStatusUrl.openConnection();
-            statusStream =urlConnection.getInputStream();
+            apiStatusUrl = new URL(baseUrl + statusApi);
+            urlConnection = (HttpURLConnection) apiStatusUrl.openConnection();
+            statusStream = urlConnection.getInputStream();
         } catch (Exception e) {
             e.printStackTrace();
             return NOT_CONNECTED;
         }
 
-        if(statusStream!=null)
-        {
+        if (statusStream != null) {
             try {
-                Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(statusStream);
+                Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(statusStream);
 
-                if(!isCookieValid(document))
+                if (!isCookieValid(document))
                     reInitializeCookie();
-                return getElementValue(document,"SignalIcon",NOT_SUPPORTED);
+                return getElementValue(document, "SignalIcon", NOT_SUPPORTED);
 
 
             } catch (Exception e) {
@@ -112,50 +103,41 @@ public class Connection {
     }
 
 
-    public String getSessionData()
-    {
-        URL apiStatusUrl=null;
+    public String getSessionData() {
+        URL apiStatusUrl = null;
 
         try {
-            apiStatusUrl =new URL(baseUrl+ trafficApi);
-            urlConnection =(HttpURLConnection) apiStatusUrl.openConnection();
-            trafficStream =urlConnection.getInputStream();
+            apiStatusUrl = new URL(baseUrl + trafficApi);
+            urlConnection = (HttpURLConnection) apiStatusUrl.openConnection();
+            trafficStream = urlConnection.getInputStream();
         } catch (Exception e) {
             e.printStackTrace();
             return NOT_CONNECTED;
         }
 
-        if(trafficStream!=null)
-        {
+        if (trafficStream != null) {
             try {
-                Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(trafficStream);
+                Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(trafficStream);
 
-                if(!isCookieValid(document))
+                if (!isCookieValid(document))
                     reInitializeCookie();
-                String down =getElementValue(document,"CurrentDownload",NOT_SUPPORTED);
-                String up =getElementValue(document,"CurrentUpload",NOT_SUPPORTED);
+                String down = getElementValue(document, "CurrentDownload", NOT_SUPPORTED);
+                String up = getElementValue(document, "CurrentUpload", NOT_SUPPORTED);
 
-                int total=Integer.parseInt(down)+Integer.parseInt(up);
+                int total = Integer.parseInt(down) + Integer.parseInt(up);
 
 
-                if(total>1024*1024)
-                {
-                   double mb=total/ (1024.0*1024.0);
-                    String s=String.format(Locale.getDefault(),"%.2f", mb);
-                   return s +" Mb";
+                if (total > 1024 * 1024) {
+                    double mb = total / (1024.0 * 1024.0);
+                    String s = String.format(Locale.getDefault(), "%.2f", mb);
+                    return s + " Mb";
+                } else if (total > 1024) {
+                    double kb = total / 1024.0;
+                    String s = String.format(Locale.getDefault(), "%.2f", kb);
+                    return s + " Kb";
+                } else {
+                    return Integer.toString(total) + " Bytes";
                 }
-                else if(total>1024)
-                {
-                    double kb= total/1024.0;
-                    String s=String.format(Locale.getDefault(),"%.2f", kb);
-                    return s +" Kb";
-                }
-                else
-                {
-                    return Integer.toString(total) +" Bytes";
-                }
-
-
 
 
             } catch (Exception e) {
@@ -167,34 +149,27 @@ public class Connection {
         return NOT_CONNECTED;
     }
 
-    private String getElementValue(Document document,String element,String def)
-    {
-       NodeList list =document.getElementsByTagName(element);
+    private String getElementValue(Document document, String element, String def) {
+        NodeList list = document.getElementsByTagName(element);
 
-       if(list.getLength()!=0)
-           return list.item(0).getTextContent();
-       else
-           return def;
+        if (list.getLength() != 0)
+            return list.item(0).getTextContent();
+        else
+            return def;
     }
 
-    private String getRoot(Document document)
-    {
+    private String getRoot(Document document) {
         return document.getDocumentElement().getNodeName();
     }
 
-    private boolean isCookieValid(Document document)
-    {
-        if ("error".equals(getRoot(document)))
-            return false;
-        else
-            return true;
+    private boolean isCookieValid(Document document) {
+        return !"error".equals(getRoot(document));
     }
 
-    private void reInitializeCookie()
-    {
-        URL url=null;
+    private void reInitializeCookie() {
+        URL url = null;
         try {
-            url= new URL(baseUrl+home);
+            url = new URL(baseUrl + home);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -203,12 +178,11 @@ public class Connection {
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.connect();
             urlConnection.getInputStream();
-            cookieInitialized =true;
+            cookieInitialized = true;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
 
 }
