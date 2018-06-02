@@ -35,7 +35,7 @@ public class SignalNotifyService extends Service {
                 .setContentText("Started")
                 .setSmallIcon(R.drawable.ic_network_check_white_24dp)
                 .setContentTitle("Connected")
-                .setPriority(NotificationCompat.PRIORITY_HIGH);
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         runTask();
 
@@ -84,9 +84,12 @@ public class SignalNotifyService extends Service {
         @Override
         protected Void doInBackground(Void... voids) {
             Connection connection = Connection.getInstance();
+            connection.openConnection();
 
             String signalLevel = connection.getSignalLevel();
             String totalData = connection.getSessionData();
+            String users = connection.getCurrentUsers();
+            String time = connection.getConnectTime();
 
             if (signalLevel == null || signalLevel == "") {
 
@@ -97,7 +100,8 @@ public class SignalNotifyService extends Service {
                 canStart = false;
                 stopSelf();
             } else {
-                builder.setContentText("Signal level:" + " " + signalLevel + " Total Data: " + totalData);
+                builder.setContentText("Signal level:" + " " + signalLevel + " Total Data: " + totalData)
+                        .setSubText("Connected users: " + users + " Time " + time);
                 startForeground(NOTIFICATION_ID, builder.build());
             }
 

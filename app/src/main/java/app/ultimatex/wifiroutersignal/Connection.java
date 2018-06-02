@@ -35,6 +35,9 @@ public class Connection {
     private InputStream statusStream;
     private InputStream trafficStream;
 
+    private Document status;
+    private Document traffic;
+
     public static Connection getInstance() {
         if (instance == null)
             return instance = new Connection();
@@ -69,26 +72,46 @@ public class Connection {
 
     }
 
-
-    public String getSignalLevel() {
+    public void openConnection() {
         URL apiStatusUrl = null;
 
         try {
             apiStatusUrl = new URL(baseUrl + statusApi);
-            urlConnection = (HttpURLConnection) apiStatusUrl.openConnection();
-            statusStream = urlConnection.getInputStream();
+            HttpURLConnection urlConnection1 = (HttpURLConnection) apiStatusUrl.openConnection();
+            statusStream = urlConnection1.getInputStream();
+            status = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(statusStream);
+            if (isCookieValid(status))
+                reInitializeCookie();
         } catch (Exception e) {
             e.printStackTrace();
-            return NOT_CONNECTED;
         }
+
+
+        URL apiTrafficUrl = null;
+
+        try {
+            apiTrafficUrl = new URL(baseUrl + trafficApi);
+            urlConnection = (HttpURLConnection) apiTrafficUrl.openConnection();
+            trafficStream = urlConnection.getInputStream();
+            traffic = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(trafficStream);
+
+            if (isCookieValid(traffic))
+                reInitializeCookie();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+
+    }
+
+
+    public String getSignalLevel() {
 
         if (statusStream != null) {
             try {
-                Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(statusStream);
 
-                if (!isCookieValid(document))
-                    reInitializeCookie();
-                return getElementValue(document, "SignalIcon", NOT_SUPPORTED);
+
+                return getElementValue(status, "SignalIcon", NOT_SUPPORTED);
 
 
             } catch (Exception e) {
@@ -103,26 +126,56 @@ public class Connection {
     }
 
 
-    public String getSessionData() {
-        URL apiStatusUrl = null;
+    public String getCurrentUsers() {
 
-        try {
-            apiStatusUrl = new URL(baseUrl + trafficApi);
-            urlConnection = (HttpURLConnection) apiStatusUrl.openConnection();
-            trafficStream = urlConnection.getInputStream();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return NOT_CONNECTED;
+        if (statusStream != null) {
+            try {
+
+                return getElementValue(status, "CurrentWifiUser", NOT_SUPPORTED);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return NOT_SUPPORTED;
+            }
         }
+
+        return NOT_CONNECTED;
+    }
+
+    public String getConnectTime() {
+        if (trafficStream != null) {
+            try {
+                String timeSec = getElementValue(traffic, "CurrentConnectTime", NOT_SUPPORTED);
+
+                int secTotal = Integer.parseInt(timeSec);
+
+                int sec = secTotal % 60;
+                int minTotal = secTotal / 60;
+                int min = minTotal % 60;
+                int hours = minTotal / 60;
+
+                return Integer.toString(hours) + ":" + Integer.toString(min) + ":" + Integer.toString(sec);
+
+
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return NOT_SUPPORTED;
+            }
+        }
+
+        return NOT_CONNECTED;
+    }
+
+
+    public String getSessionData() {
 
         if (trafficStream != null) {
             try {
-                Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(trafficStream);
-
-                if (!isCookieValid(document))
-                    reInitializeCookie();
-                String down = getElementValue(document, "CurrentDownload", NOT_SUPPORTED);
-                String up = getElementValue(document, "CurrentUpload", NOT_SUPPORTED);
+                String down = getElementValue(traffic, "CurrentDownload", NOT_SUPPORTED);
+                String up = getElementValue(traffic, "CurrentUpload", NOT_SUPPORTED);
 
                 int total = Integer.parseInt(down) + Integer.parseInt(up);
 
