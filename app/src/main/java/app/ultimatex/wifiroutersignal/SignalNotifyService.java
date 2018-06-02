@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.widget.Toast;
 
 public class SignalNotifyService extends Service {
 
@@ -31,7 +32,8 @@ public class SignalNotifyService extends Service {
         builder =new NotificationCompat.Builder(this,"MY_CHANNEL")
                 .setContentText("Started")
                 .setSmallIcon(R.drawable.ic_network_check_white_24dp)
-                .setContentTitle("Signal Level");
+                .setContentTitle("Connected")
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
 
         runTask();
 
@@ -76,6 +78,7 @@ public class SignalNotifyService extends Service {
     class NotificationUpdater extends AsyncTask<Void,Void,Void>
     {
 
+        private boolean canStart= true;
 
         @Override
         protected void onPreExecute() {
@@ -84,15 +87,26 @@ public class SignalNotifyService extends Service {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            Connection connection=new Connection();
-            String string =connection.getSignalLevel();
+            Connection connection=Connection.getInstance();
 
-            if(string ==null || string =="")
+            String signalLevel =connection.getSignalLevel();
+            String totalData =connection.getSessionData();
+
+            if(signalLevel ==null || signalLevel =="") {
+
                 builder.setContentText("No Signal");
-            else
-                builder.setContentText(string);
+                startForeground(NOTIFICATION_ID, builder.build());
+            }
+            else if(signalLevel.equals(Connection.NOT_SUPPORTED))
+            {
 
-            startForeground(NOTIFICATION_ID,builder.build());
+                canStart=false;
+                stopSelf();
+            }
+            else {
+                builder.setContentText("signal level:"+ " "+ signalLevel +" Total: "+totalData);
+                startForeground(NOTIFICATION_ID, builder.build());
+            }
 
             return null;
         }
@@ -100,13 +114,18 @@ public class SignalNotifyService extends Service {
         @Override
         protected void onPostExecute(Void aVoid) {
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if(canStart) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (isMyServiceRunning(SignalNotifyService.class))
+                    runTask();
             }
-            if(isMyServiceRunning(SignalNotifyService.class))
-                runTask();
+            else {
+                Toast.makeText(getApplicationContext(),"Your router is not supported or you are not connected",Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }
