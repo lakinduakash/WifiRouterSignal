@@ -157,6 +157,8 @@ public class SignalNotifyService extends Service {
 
                 NotificationManagerCompat.from(SignalNotifyService.this).notify(NOTIFICATION_ID_NEW_USER, notification);
                 prevUserCount = curUserCount;
+            } else if (curUserCount < prevUserCount) {
+                prevUserCount = curUserCount;
             }
 
             if (canStart) {
