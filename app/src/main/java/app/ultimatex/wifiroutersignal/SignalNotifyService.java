@@ -2,6 +2,7 @@ package app.ultimatex.wifiroutersignal;
 
 
 import android.app.ActivityManager;
+import android.app.Notification;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.widget.Toast;
 
 import app.ultimatex.wifiroutersignal.tiny.TinyDB;
@@ -17,8 +19,14 @@ import app.ultimatex.wifiroutersignal.tiny.TinyDB;
 public class SignalNotifyService extends Service {
 
     public static final int NOTIFICATION_ID = 5;
+    public static final int NOTIFICATION_ID_NEW_USER = 4;
+    public static final String NOTIFICATION_CHANNEL_NEW_USER = "MY_CHANNEL_NEW_USER";
+    public static final String NOTIFICATION_CHANNEL = "MY_CHANNEL";
+
     private String addr;
     TinyDB tinyDB;
+    volatile private int prevUserCount = 1;
+    volatile private int curUserCount = 0;
 
 
     private NotificationCompat.Builder builder;
@@ -45,7 +53,7 @@ public class SignalNotifyService extends Service {
         if ("".equals(addr))
             addr = "http://homerouter.cpe";
 
-        builder = new NotificationCompat.Builder(this, "MY_CHANNEL")
+        builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
                 .setContentText("Started")
                 .setSmallIcon(R.drawable.ic_network_check_white_24dp)
                 .setContentTitle("Connected")
@@ -103,6 +111,12 @@ public class SignalNotifyService extends Service {
             String signalLevel = connection.getSignalLevel();
             String totalData = connection.getSessionData();
             String users = connection.getCurrentUsers();
+
+            try {
+                curUserCount = Integer.parseInt(users);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
             String time = connection.getConnectTime();
 
             if (signalLevel == null || signalLevel == "") {
@@ -130,6 +144,20 @@ public class SignalNotifyService extends Service {
 
         @Override
         protected void onPostExecute(Void aVoid) {
+
+            if (curUserCount > prevUserCount) {
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(SignalNotifyService.this, NOTIFICATION_CHANNEL_NEW_USER);
+
+                Notification notification = builder.setTicker("New device is connected")
+                        .setSmallIcon(R.drawable.ic_echonest)
+                        .setContentTitle("New device is connected")
+                        .setContentText("New device is connected to your wifi network")
+                        .setDefaults(NotificationCompat.DEFAULT_VIBRATE)
+                        .setDefaults(NotificationCompat.DEFAULT_SOUND).build();
+
+                NotificationManagerCompat.from(SignalNotifyService.this).notify(NOTIFICATION_ID_NEW_USER, notification);
+                prevUserCount = curUserCount;
+            }
 
             if (canStart) {
 
