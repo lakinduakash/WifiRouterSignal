@@ -42,7 +42,7 @@ public class SignalNotifyService extends Service {
         addr = intent.getStringExtra(MainActivity.WIFI_ADDRESS);
         if (addr == null)
             addr = tinyDB.getString(MainActivity.WIFI_ADDRESS);
-        else if ("".equals(addr))
+        if ("".equals(addr))
             addr = "http://homerouter.cpe";
 
         builder = new NotificationCompat.Builder(this, "MY_CHANNEL")
