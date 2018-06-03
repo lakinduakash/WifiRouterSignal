@@ -18,13 +18,14 @@ public class Connection {
 
     public static final String NOT_SUPPORTED = "not_supported";
     public static final String NOT_CONNECTED = "not_connected";
+    public static final String DEFAULT_ADDR = "http://homerouter.cpe";
 
     private static boolean cookieInitialized = false;
     private static CookieHandler cookieHandler;
     private static CookieManager cookieManager = new CookieManager();
     private static Connection instance;
 
-    private static String baseUrl = "http://homerouter.cpe/";
+    private static String baseUrl = DEFAULT_ADDR + "/";
     private String statusApi = "api/monitoring/status/";
     private String trafficApi = "api/monitoring/traffic-statistics/";
     private String home = "html/home.html";
@@ -44,6 +45,16 @@ public class Connection {
         else
             return instance;
     }
+
+    public static Connection getInstance(String address) {
+        baseUrl = address + "/";
+        if (instance == null) {
+            return instance = new Connection();
+        } else
+            return instance;
+    }
+
+
 
 
     private Connection() {
@@ -73,6 +84,8 @@ public class Connection {
     }
 
     public void openConnection() {
+        statusStream = null;
+        trafficStream = null;
         URL apiStatusUrl = null;
 
         try {
@@ -80,8 +93,10 @@ public class Connection {
             HttpURLConnection urlConnection1 = (HttpURLConnection) apiStatusUrl.openConnection();
             statusStream = urlConnection1.getInputStream();
             status = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(statusStream);
-            if (isCookieValid(status))
+            if (!isCookieValid(status)) {
                 reInitializeCookie();
+                openConnection();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -95,8 +110,10 @@ public class Connection {
             trafficStream = urlConnection.getInputStream();
             traffic = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(trafficStream);
 
-            if (isCookieValid(traffic))
+            if (!isCookieValid(traffic)) {
                 reInitializeCookie();
+                openConnection();
+            }
         } catch (Exception e) {
             e.printStackTrace();
 
