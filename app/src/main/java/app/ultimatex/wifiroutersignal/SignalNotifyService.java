@@ -24,7 +24,7 @@ public class SignalNotifyService extends Service {
     public static final String NOTIFICATION_CHANNEL = "MY_CHANNEL";
 
     private String addr;
-    TinyDB tinyDB;
+    private TinyDB tinyDB;
     volatile private int prevUserCount = 1;
     volatile private int curUserCount = 0;
 
