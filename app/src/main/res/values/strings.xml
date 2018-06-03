@@ -3,4 +3,6 @@
     <string name="start_service">Start Service</string>
     <string name="stop_service">Stop Service</string>
     <string name="change_notification">Change</string>
+    <string name="set_home_page">Set Address</string>
+    <string name="touch_to_edit">Double tap to edit</string>
 </resources>
