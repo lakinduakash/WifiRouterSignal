@@ -31,6 +31,9 @@ public class Connection {
     private String home = "html/home.html";
 
 
+    private boolean connected = false;
+
+
     private HttpURLConnection urlConnection;
 
     private InputStream statusStream;
@@ -74,6 +77,7 @@ public class Connection {
                 urlConnection.connect();
                 urlConnection.getInputStream();
                 cookieInitialized = true;
+                connected = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -96,9 +100,11 @@ public class Connection {
             if (!isCookieValid(status)) {
                 reInitializeCookie();
                 openConnection();
+                connected = true;
             }
         } catch (Exception e) {
             e.printStackTrace();
+            connected = false;
         }
 
 
@@ -113,9 +119,11 @@ public class Connection {
             if (!isCookieValid(traffic)) {
                 reInitializeCookie();
                 openConnection();
+                connected = true;
             }
         } catch (Exception e) {
             e.printStackTrace();
+            connected = false;
 
         }
 
@@ -161,7 +169,7 @@ public class Connection {
     }
 
     public String getConnectTime() {
-        if (trafficStream != null) {
+        if (trafficStream != null && connected) {
             try {
                 String timeSec = getElementValue(traffic, "CurrentConnectTime", NOT_SUPPORTED);
 
@@ -189,7 +197,7 @@ public class Connection {
 
     public String getSessionData() {
 
-        if (trafficStream != null) {
+        if (trafficStream != null && connected) {
             try {
                 String down = getElementValue(traffic, "CurrentDownload", NOT_SUPPORTED);
                 String up = getElementValue(traffic, "CurrentUpload", NOT_SUPPORTED);
@@ -217,6 +225,10 @@ public class Connection {
         }
 
         return NOT_CONNECTED;
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 
     private String getElementValue(Document document, String element, String def) {
