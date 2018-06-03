@@ -12,10 +12,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
+import app.ultimatex.wifiroutersignal.tiny.TinyDB;
+
 public class SignalNotifyService extends Service {
 
     public static final int NOTIFICATION_ID = 5;
-    private static int count = 0;
+    private String addr;
+    TinyDB tinyDB;
+
 
     private NotificationCompat.Builder builder;
     private NotificationUpdater u;
@@ -29,7 +33,17 @@ public class SignalNotifyService extends Service {
     }
 
     @Override
+    public void onCreate() {
+        tinyDB = new TinyDB(this);
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        addr = intent.getStringExtra(MainActivity.WIFI_ADDRESS);
+        if (addr == null)
+            addr = tinyDB.getString(MainActivity.WIFI_ADDRESS);
+        else if ("".equals(addr))
+            addr = "http://homerouter.cpe";
 
         builder = new NotificationCompat.Builder(this, "MY_CHANNEL")
                 .setContentText("Started")
@@ -83,7 +97,7 @@ public class SignalNotifyService extends Service {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            Connection connection = Connection.getInstance();
+            Connection connection = Connection.getInstance(addr);
             connection.openConnection();
 
             String signalLevel = connection.getSignalLevel();
