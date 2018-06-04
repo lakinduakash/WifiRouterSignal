@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
+
         startServiceButton = findViewById(R.id.start_service);
         stopServiceButton = findViewById(R.id.stop_service);
         editText = findViewById(R.id.set_address_editText);
@@ -40,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         setButtonListeners();
         textFieldInit();
+
 
 
     }
@@ -63,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         return builder.setTitle(R.string.start_service_dialog_title)
                 .setMessage(R.string.start_service_dialog_message)
                 .setCancelable(true)
-                .setPositiveButton(R.string.No, positiveListener)
+                .setPositiveButton(R.string.Yes, positiveListener)
                 .setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
