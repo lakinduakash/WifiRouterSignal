@@ -36,22 +36,44 @@ public class MainActivity extends AppCompatActivity {
         setAddress = findViewById(R.id.set_address_button);
 
         tinyDB = new TinyDB(this);
-
         addr = tinyDB.getString(WIFI_ADDRESS);
 
-        if (addr == null || addr == "") {
-            addr = Connection.DEFAULT_ADDR;
-        }
+        setButtonListeners();
+        textFieldInit();
 
-        editText.setText(addr);
 
-        editText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
-            }
-        });
+    }
 
+    private void startMyService() {
+        serviceIntent.putExtra(WIFI_ADDRESS, addr);
+        startService(serviceIntent);
+    }
+
+    private void stopMyService() {
+        stopService(serviceIntent);
+    }
+
+    private void putAddr() {
+        tinyDB.putString(WIFI_ADDRESS, editText.getText().toString());
+        addr = tinyDB.getString(WIFI_ADDRESS);
+    }
+
+    private AlertDialog buildDialog(DialogInterface.OnClickListener positiveListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        return builder.setTitle(R.string.start_service_dialog_title)
+                .setMessage(R.string.start_service_dialog_message)
+                .setCancelable(true)
+                .setPositiveButton(R.string.No, positiveListener)
+                .setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .create();
+    }
+
+    private void setButtonListeners() {
         serviceIntent = new Intent(this, SignalNotifyService.class);
 
         startServiceButton.setOnClickListener(new View.OnClickListener() {
@@ -94,38 +116,24 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void textFieldInit() {
+        if (addr == null || addr == "") {
+            addr = Connection.DEFAULT_ADDR;
+        }
+
+        editText.setText(addr);
+
+        editText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
+            }
+        });
+
 
         editText.setInputType(InputType.TYPE_NULL);
-
-    }
-
-    private void startMyService() {
-        serviceIntent.putExtra(WIFI_ADDRESS, addr);
-        startService(serviceIntent);
-    }
-
-    private void stopMyService() {
-        stopService(serviceIntent);
-    }
-
-    private void putAddr() {
-        tinyDB.putString(WIFI_ADDRESS, editText.getText().toString());
-        addr = tinyDB.getString(WIFI_ADDRESS);
-    }
-
-    private AlertDialog buildDialog(DialogInterface.OnClickListener positiveListener) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        return builder.setTitle(R.string.start_service_dialog_title)
-                .setMessage(R.string.start_service_dialog_message)
-                .setCancelable(true)
-                .setPositiveButton(R.string.No, positiveListener)
-                .setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                })
-                .create();
     }
 
 
