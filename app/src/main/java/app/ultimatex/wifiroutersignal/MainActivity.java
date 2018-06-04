@@ -3,10 +3,13 @@ package app.ultimatex.wifiroutersignal;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,10 +37,17 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
 
+        ActionBar actionbar = getSupportActionBar();
+
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
+
+
         startServiceButton = findViewById(R.id.start_service);
         stopServiceButton = findViewById(R.id.stop_service);
         editText = findViewById(R.id.set_address_editText);
         setAddress = findViewById(R.id.set_address_button);
+
 
         tinyDB = new TinyDB(this);
         addr = tinyDB.getString(WIFI_ADDRESS);
@@ -46,7 +56,17 @@ public class MainActivity extends AppCompatActivity {
         textFieldInit();
 
 
+    }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_tool_bar, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
     }
 
     private void startMyService() {
