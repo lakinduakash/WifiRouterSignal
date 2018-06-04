@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Wifi Router Signal</string>
+    <string name="start_service">Start Service</string>
+    <string name="stop_service">Stop Service</string>
+    <string name="change_notification">Change</string>
+    <string name="set_home_page">Set Address</string>
+    <string name="touch_to_edit">Double tap to edit</string>
+    <string name="start_service_dialog_title">Start Service</string>
+    <string name="start_service_dialog_message">Default gateway was changed, do you want to start the service?(if not started)
+        Make sure your address has no ending slash (/)</string>
+    <string name="Yes">Yes</string>
+    <string name="No">No</string>
+    <string name="toast_address_is_already_set">Address is already set to this</string>
+    <string name="new_device_connected">New device is connected</string>
+    <string name="No_signal">No signal</string>
+    <string name="Signal_level">Signal level</string>
+    <string name="Total_data">Total data</string>
+    <string name="Users">Users</string>
+    <string name="Time">Time</string>
+    <string name="new_device_connected_notification_content">New device is connected to your wifi network</string>
+    <string name="router_is_not_connected_or_not_supported">Your router is not supported or you are not connected</string>
+</resources>
