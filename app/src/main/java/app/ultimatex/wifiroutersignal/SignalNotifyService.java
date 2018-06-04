@@ -121,15 +121,15 @@ public class SignalNotifyService extends Service {
 
             if (signalLevel == null || signalLevel == "") {
 
-                builder.setContentText("No Signal");
+                builder.setContentText(getResources().getText(R.string.No_signal));
                 startForeground(NOTIFICATION_ID, builder.build());
             } else if (signalLevel.equals(Connection.NOT_SUPPORTED) || signalLevel.equals(Connection.NOT_CONNECTED)) {
 
                 canStart = false;
                 stopSelf();
             } else {
-                builder.setContentText("Signal level:" + " " + signalLevel + " Total Data: " + totalData)
-                        .setSubText("Connected users: " + users + " Time " + time);
+                builder.setContentText(getResources().getText(R.string.Signal_level) + ": " + signalLevel + " " + getResources().getText(R.string.Total_data) + ": " + totalData)
+                        .setSubText(getResources().getText(R.string.Users) + ": " + users + " " + getResources().getText(R.string.Time) + " " + time);
                 startForeground(NOTIFICATION_ID, builder.build());
             }
 
@@ -148,10 +148,10 @@ public class SignalNotifyService extends Service {
             if (curUserCount > prevUserCount) {
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(SignalNotifyService.this, NOTIFICATION_CHANNEL_NEW_USER);
 
-                Notification notification = builder.setTicker("New device is connected")
+                Notification notification = builder.setTicker(getResources().getText(R.string.new_device_connected))
                         .setSmallIcon(R.drawable.ic_echonest)
-                        .setContentTitle("New device is connected")
-                        .setContentText("New device is connected to your wifi network")
+                        .setContentTitle(getResources().getText(R.string.new_device_connected))
+                        .setContentText(getResources().getText(R.string.new_device_connected_notification_content))
                         .setDefaults(NotificationCompat.DEFAULT_VIBRATE)
                         .setDefaults(NotificationCompat.DEFAULT_SOUND).build();
 
@@ -166,7 +166,7 @@ public class SignalNotifyService extends Service {
                 if (!stopTask)
                     runTask();
             } else {
-                Toast.makeText(getApplicationContext(), "Your router is not supported or you are not connected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.router_is_not_connected_or_not_supported, Toast.LENGTH_SHORT).show();
             }
         }
     }

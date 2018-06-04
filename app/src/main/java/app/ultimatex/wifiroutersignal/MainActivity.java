@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         addr = tinyDB.getString(WIFI_ADDRESS);
 
         if (addr == null || addr == "") {
-            addr = "http://homerouter.cpe";
+            addr = Connection.DEFAULT_ADDR;
         }
 
         editText.setText(addr);
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }).show();
                 } else {
-                    Toast.makeText(MainActivity.this, "Address is already set to this", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.toast_address_is_already_set, Toast.LENGTH_SHORT).show();
                     editText.setInputType(InputType.TYPE_NULL);
                 }
 
@@ -114,14 +114,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private AlertDialog buildDialog(DialogInterface.OnClickListener positiveListener) {
-        CharSequence sequence = "Yes";
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        return builder.setTitle("Start Service")
-                .setMessage("Default gateway was changed, do you want to start the service?(if not started)\n " +
-                        "Make sure your address has no ending slash " + "(/)")
+        return builder.setTitle(R.string.start_service_dialog_title)
+                .setMessage(R.string.start_service_dialog_message)
                 .setCancelable(true)
-                .setPositiveButton(sequence, positiveListener)
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.No, positiveListener)
+                .setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();

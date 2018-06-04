@@ -21,7 +21,6 @@ public class Connection {
     public static final String DEFAULT_ADDR = "http://homerouter.cpe";
 
     private static boolean cookieInitialized = false;
-    private static CookieHandler cookieHandler;
     private static CookieManager cookieManager = new CookieManager();
     private static Connection instance;
 
