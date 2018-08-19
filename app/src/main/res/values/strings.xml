@@ -19,4 +19,5 @@
     <string name="Time">Time</string>
     <string name="new_device_connected_notification_content">New device is connected to your wifi network</string>
     <string name="router_is_not_connected_or_not_supported">Your router is not supported or you are not connected</string>
+    <string name="settings">settings</string>
 </resources>
