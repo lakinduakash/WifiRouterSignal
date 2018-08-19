@@ -14,6 +14,9 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.widget.Toast;
 
+import java.util.Date;
+import java.util.Locale;
+
 import app.ultimatex.wifiroutersignal.tiny.TinyDB;
 
 public class SignalNotifyService extends Service {
@@ -22,6 +25,8 @@ public class SignalNotifyService extends Service {
     public static final int NOTIFICATION_ID_NEW_USER = 4;
     public static final String NOTIFICATION_CHANNEL_NEW_USER = "MY_CHANNEL_NEW_USER";
     public static final String NOTIFICATION_CHANNEL = "MY_CHANNEL";
+    public static final String DAILY_TOTAL_DATA = "totalDataFrom8AM";
+
 
     private String addr;
     private TinyDB tinyDB;
@@ -94,6 +99,26 @@ public class SignalNotifyService extends Service {
         return false;
     }
 
+    private int updateDailyData(int bytes) {
+        int prevC = tinyDB.getInt(DAILY_TOTAL_DATA);
+        int timestamp = tinyDB.getInt("p");
+
+        if (bytes >= 0) {
+            if (timestamp != new Date().getDay()) {
+                prevC = 0;
+                timestamp = new Date().getDate();
+                tinyDB.putInt("p", timestamp);
+                tinyDB.putInt(DAILY_TOTAL_DATA, prevC);
+            } else {
+                prevC += bytes;
+                tinyDB.putInt(DAILY_TOTAL_DATA, prevC);
+            }
+
+        }
+
+        return prevC;
+    }
+
     class NotificationUpdater extends AsyncTask<Void, Void, Void> {
 
         private boolean canStart = true;
@@ -110,8 +135,9 @@ public class SignalNotifyService extends Service {
             connection.openConnection();
 
             String signalLevel = connection.getSignalLevel();
-            String totalData = connection.getSessionData();
+            String totalData = "";
             String users = connection.getCurrentUsers();
+            int total = 0;
 
             try {
                 curUserCount = Integer.parseInt(users);
@@ -135,13 +161,28 @@ public class SignalNotifyService extends Service {
                 stopSelf();
 
             } else {
+                total = updateDailyData(connection.getSessionDataInBytes());
+
+                if (total > 1024 * 1024) {
+                    double mb = total / (1024.0 * 1024.0);
+                    String s = String.format(Locale.getDefault(), "%.2f", mb);
+                    totalData = s + " MB";
+                } else if (total > 1024) {
+                    double kb = total / 1024.0;
+                    String s = String.format(Locale.getDefault(), "%.2f", kb);
+                    totalData = s + " KB";
+                } else {
+                    totalData = Integer.toString(total) + " Bytes";
+                }
+
                 builder.setContentText(getResources().getText(R.string.Signal_level) + ": " + signalLevel + " " + getResources().getText(R.string.Total_data) + ": " + totalData)
                         .setSubText(getResources().getText(R.string.Users) + ": " + users + " " + getResources().getText(R.string.Time) + " " + time);
                 startForeground(NOTIFICATION_ID, builder.build());
+
             }
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(1500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
