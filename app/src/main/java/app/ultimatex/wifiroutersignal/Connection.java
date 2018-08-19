@@ -20,6 +20,7 @@ public class Connection {
     public static final int NOT_SUPPORTED_I = -1;
     public static final String NOT_CONNECTED = "not_connected";
     public static final int NOT_CONNECTED_I = -2;
+    public static final String DISCONNECTED = "Router disconnected";
     public static final String DEFAULT_ADDR = "http://homerouter.cpe";
 
     private static boolean cookieInitialized = false;
@@ -31,7 +32,7 @@ public class Connection {
     private String trafficApi = "api/monitoring/traffic-statistics/";
     private String home = "html/home.html";
 
-    private boolean HadPrevRequest = false;
+    private boolean isPrevRequestSuccess = false;
 
 
     private boolean connected = false;
@@ -194,7 +195,10 @@ public class Connection {
             }
         }
 
-        return NOT_CONNECTED;
+        if (isPrevRequestSuccess == false)
+            return NOT_CONNECTED;
+        else
+            return DISCONNECTED;
     }
 
 
@@ -202,8 +206,7 @@ public class Connection {
 
         int total = getSessionDataInBytes();
 
-        if (total > 0) {
-
+        if (total >= 0) {
 
             if (total > 1024 * 1024) {
                 double mb = total / (1024.0 * 1024.0);
@@ -229,10 +232,13 @@ public class Connection {
     private String getElementValue(Document document, String element, String def) {
         NodeList list = document.getElementsByTagName(element);
 
-        if (list.getLength() != 0)
+        if (list.getLength() != 0) {
+            isPrevRequestSuccess = true;
             return list.item(0).getTextContent();
-        else
+        } else {
+            isPrevRequestSuccess = false;
             return def;
+        }
     }
 
     private String getRoot(Document document) {
