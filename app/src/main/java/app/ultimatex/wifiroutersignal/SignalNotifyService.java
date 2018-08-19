@@ -104,14 +104,15 @@ public class SignalNotifyService extends Service {
         int timestamp = tinyDB.getInt("p");
 
         if (bytes >= 0) {
-            if (timestamp != new Date().getDay()) {
-                prevC = 0;
+            if (timestamp != new Date().getDate()) {
+                prevC = bytes;
                 timestamp = new Date().getDate();
                 tinyDB.putInt("p", timestamp);
                 tinyDB.putInt(DAILY_TOTAL_DATA, prevC);
             } else {
                 prevC += bytes;
                 tinyDB.putInt(DAILY_TOTAL_DATA, prevC);
+                return prevC;
             }
 
         }
@@ -161,6 +162,7 @@ public class SignalNotifyService extends Service {
                 stopSelf();
 
             } else {
+                //TODO wrong calculation
                 total = updateDailyData(connection.getSessionDataInBytes());
 
                 if (total > 1024 * 1024) {
