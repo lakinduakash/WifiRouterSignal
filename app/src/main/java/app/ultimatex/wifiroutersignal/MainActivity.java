@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void textFieldInit() {
-        if (addr == null || addr == "") {
+        if (addr == null || "".equals(addr)) {
             addr = Connection.DEFAULT_ADDR;
         }
 
