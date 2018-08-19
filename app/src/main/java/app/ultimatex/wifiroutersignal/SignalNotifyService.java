@@ -175,7 +175,7 @@ public class SignalNotifyService extends Service {
             } else if (!disconnected) {
                 Toast.makeText(getApplicationContext(), R.string.router_is_not_connected_or_not_supported, Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getApplicationContext(), "disconnected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Router disconnected", Toast.LENGTH_SHORT).show();
             }
         }
     }
