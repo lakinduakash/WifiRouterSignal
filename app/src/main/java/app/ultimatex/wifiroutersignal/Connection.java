@@ -149,7 +149,10 @@ public class Connection {
             }
         }
 
-        return NOT_CONNECTED;
+        if (!isPrevRequestSuccess)
+            return NOT_CONNECTED;
+        else
+            return DISCONNECTED;
 
 
     }
@@ -169,7 +172,10 @@ public class Connection {
             }
         }
 
-        return NOT_CONNECTED;
+        if (!isPrevRequestSuccess)
+            return NOT_CONNECTED;
+        else
+            return DISCONNECTED;
     }
 
     public String getConnectTime() {
@@ -195,7 +201,7 @@ public class Connection {
             }
         }
 
-        if (isPrevRequestSuccess == false)
+        if (!isPrevRequestSuccess)
             return NOT_CONNECTED;
         else
             return DISCONNECTED;
@@ -220,7 +226,10 @@ public class Connection {
                 return Integer.toString(total) + " Bytes";
             }
         } else if (total == NOT_CONNECTED_I)
-            return NOT_CONNECTED;
+            if (!isPrevRequestSuccess)
+                return NOT_CONNECTED;
+            else
+                return DISCONNECTED;
         else
             return NOT_SUPPORTED;
     }
