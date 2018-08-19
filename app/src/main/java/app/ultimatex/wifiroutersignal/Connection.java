@@ -17,7 +17,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 public class Connection {
 
     public static final String NOT_SUPPORTED = "not_supported";
+    public static final int NOT_SUPPORTED_I = -1;
     public static final String NOT_CONNECTED = "not_connected";
+    public static final int NOT_CONNECTED_I = -2;
     public static final String DEFAULT_ADDR = "http://homerouter.cpe";
 
     private static boolean cookieInitialized = false;
@@ -28,6 +30,8 @@ public class Connection {
     private String statusApi = "api/monitoring/status/";
     private String trafficApi = "api/monitoring/traffic-statistics/";
     private String home = "html/home.html";
+
+    private boolean HadPrevRequest = false;
 
 
     private boolean connected = false;
@@ -196,34 +200,26 @@ public class Connection {
 
     public String getSessionData() {
 
-        if (trafficStream != null && connected) {
-            try {
-                String down = getElementValue(traffic, "CurrentDownload", NOT_SUPPORTED);
-                String up = getElementValue(traffic, "CurrentUpload", NOT_SUPPORTED);
+        int total = getSessionDataInBytes();
 
-                int total = Integer.parseInt(down) + Integer.parseInt(up);
+        if (total > 0) {
 
 
-                if (total > 1024 * 1024) {
-                    double mb = total / (1024.0 * 1024.0);
-                    String s = String.format(Locale.getDefault(), "%.2f", mb);
-                    return s + " MB";
-                } else if (total > 1024) {
-                    double kb = total / 1024.0;
-                    String s = String.format(Locale.getDefault(), "%.2f", kb);
-                    return s + " KB";
-                } else {
-                    return Integer.toString(total) + " Bytes";
-                }
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return NOT_SUPPORTED;
+            if (total > 1024 * 1024) {
+                double mb = total / (1024.0 * 1024.0);
+                String s = String.format(Locale.getDefault(), "%.2f", mb);
+                return s + " MB";
+            } else if (total > 1024) {
+                double kb = total / 1024.0;
+                String s = String.format(Locale.getDefault(), "%.2f", kb);
+                return s + " KB";
+            } else {
+                return Integer.toString(total) + " Bytes";
             }
-        }
-
-        return NOT_CONNECTED;
+        } else if (total == NOT_CONNECTED_I)
+            return NOT_CONNECTED;
+        else
+            return NOT_SUPPORTED;
     }
 
     public boolean isConnected() {
@@ -265,5 +261,21 @@ public class Connection {
         }
     }
 
+    public int getSessionDataInBytes() {
+        if (trafficStream != null && connected) {
+            try {
+                String down = getElementValue(traffic, "CurrentDownload", NOT_SUPPORTED);
+                String up = getElementValue(traffic, "CurrentUpload", NOT_SUPPORTED);
 
+                return Integer.parseInt(down) + Integer.parseInt(up);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return NOT_SUPPORTED_I;
+            }
+        }
+        return NOT_CONNECTED_I;
+
+    }
 }
