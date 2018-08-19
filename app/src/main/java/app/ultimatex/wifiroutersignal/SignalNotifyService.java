@@ -97,6 +97,7 @@ public class SignalNotifyService extends Service {
     class NotificationUpdater extends AsyncTask<Void, Void, Void> {
 
         private boolean canStart = true;
+        private boolean disconnected = false;
 
         @Override
         protected void onPreExecute() {
@@ -126,7 +127,13 @@ public class SignalNotifyService extends Service {
             } else if (signalLevel.equals(Connection.NOT_SUPPORTED) || signalLevel.equals(Connection.NOT_CONNECTED)) {
 
                 canStart = false;
+                disconnected = false;
                 stopSelf();
+            } else if (signalLevel.equals(Connection.DISCONNECTED)) {
+                canStart = false;
+                disconnected = true;
+                stopSelf();
+
             } else {
                 builder.setContentText(getResources().getText(R.string.Signal_level) + ": " + signalLevel + " " + getResources().getText(R.string.Total_data) + ": " + totalData)
                         .setSubText(getResources().getText(R.string.Users) + ": " + users + " " + getResources().getText(R.string.Time) + " " + time);
@@ -165,8 +172,10 @@ public class SignalNotifyService extends Service {
 
                 if (!stopTask)
                     runTask();
-            } else {
+            } else if (!disconnected) {
                 Toast.makeText(getApplicationContext(), R.string.router_is_not_connected_or_not_supported, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "disconnected", Toast.LENGTH_SHORT).show();
             }
         }
     }
